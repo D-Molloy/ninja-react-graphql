@@ -1,10 +1,17 @@
 const graphql = require('graphql');
-
+const _ = require('lodash');
 //defining the graph
 //we have two object types - Books and Authors
 // need to define what goes in them, how they interact with each other
 //  destructuring ObjectType off of graphQL
 const {GraphQLObjectType, GraphQLString, GraphQLSchema} = graphql;
+
+// DUMMY DATA
+const books = [
+    {name: 'The Demon Haunted World', genre: 'Self Help', id: '1'},
+    {name: 'The Shining', genre: 'Horror', id: '2'},
+    {name: 'Dr. Sleep', genre: 'Horror', id: '3'}
+]
 
 //fields needs to be a function is that types will have references to another, and the function allows universal knowledge of others
 //
@@ -27,15 +34,16 @@ const RootQuery = new GraphQLObjectType({
     fields:{
         book:{
             type: BookType,
-            args:{id: GraphQLString},
+            args:{id: {type: GraphQLString}},
             resolve(parent, args){
                 //code to get data from db/other source
-                args.id
+                //finding book with the id
+               return _.find(books, {id: args.id})
             }
         }
     }
 });
 
-modeule.exports = new GraphQLSchema({
+module.exports = new GraphQLSchema({
     query:RootQuery,
 })

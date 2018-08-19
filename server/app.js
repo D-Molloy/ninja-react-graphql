@@ -8,13 +8,18 @@ const schema = require('./schema/schema');
 const PORT = process.env.PORT || 4000;
 const app = express()
 
-app.listen(PORT, ()=>{
-    console.log(`listening on PORT: ${PORT}`)
-})
 
 // setting up express middleware to handoff the request to graphQL
 // the gql function is there to handle the request
 // params are the schema
+//setting up graphiql === postman
 app.use('/graphql', graphqlHTTP({
-    schema
+    schema,
+    //graphiql
+    graphiql:true
 }))
+
+
+app.listen(PORT, ()=>{
+    console.log(`listening on PORT: ${PORT}`)
+})
