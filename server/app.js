@@ -3,9 +3,9 @@ const express = require('express');
 // this package allows express to understand GQL
 // we use it as middleware on a route
 const graphqlHTTP = require('express-graphql');
+const schema = require('./schema/schema');
 
 const PORT = process.env.PORT || 4000;
-
 const app = express()
 
 app.listen(PORT, ()=>{
@@ -16,6 +16,5 @@ app.listen(PORT, ()=>{
 // the gql function is there to handle the request
 // params are the schema
 app.use('/graphql', graphqlHTTP({
-
-    
+    schema
 }))
