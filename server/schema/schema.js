@@ -1,5 +1,6 @@
 const graphql = require('graphql');
 const _ = require('lodash');
+
 //defining the graph
 //we have two object types - Books and Authors
 // need to define what goes in them, how they interact with each other
@@ -89,8 +90,6 @@ const BookType = new GraphQLObjectType({
 //   genre: 'Self Help',
 //   id: '1',
 //   authorId: '1' }
-
-
 
 // Roots are your entry points
 // each field is a type of query
