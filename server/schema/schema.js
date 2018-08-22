@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const _ = require('lodash');
-
+const Book = require('../models/book');
+const Author = require('../models/author')
 //defining the graph
 //we have two object types - Books and Authors
 // need to define what goes in them, how they interact with each other
@@ -15,21 +16,7 @@ const {
     GraphQLList
 } = graphql;
 
-// DUMMY DATA
-const books = [
-    {name: 'Cosmos', genre: 'Self Help', id: '1', authorId:"1"},
-    {name: 'The Demon Haunted World', genre: 'Self Help', id: '2', authorId:"1"},
-    {name: 'Pale Blue Dot', genre: 'Self Help', id: '3', authorId:"1"},
-    {name: 'The Shining', genre: 'Horror', id: '4', authorId:"2"},
-    {name: 'Dr. Sleep', genre: 'Horror', id: '5', authorId:"2"},
-    {name: 'Rules for a Knight', genre: 'Fantasy', id: '6', authorId:"3"}
-]
 
-const authors =[
-    {name: 'Carl Sagan', age:'78', id:'1' },
-    {name: 'Stephen King', age:'60' , id:'2' },
-    {name: 'Ethan Hawke', age:'45' , id:'3' }
-]
 
 // FIELDS' value is a function so that the schema doesn't throw errors due to references of other types (BookType)
 const AuthorType = new GraphQLObjectType({
@@ -43,7 +30,9 @@ const AuthorType = new GraphQLObjectType({
             type: new GraphQLList(BookType),
             resolve(parent, args){
                 //get the id from the parent object and use it to filter into a new array
-                return _.filter(books, {authorId: parent.id})
+                // return _.filter(books, {authorId: parent.id})
+
+                return Book.find({authorId: parent.id})
             }
         }
 
@@ -65,31 +54,15 @@ const BookType = new GraphQLObjectType({
         author:{
             type: AuthorType,
             resolve(parent, args){
-                // 1 - console.log below
-                console.log(parent)
+                // local data method
                 //find the author whose id matches parent.authorId
-                return _.find(authors,{id: parent.authorId})
+                // return _.find(authors,{id: parent.authorId})
+                return Author.findById(parent.authorId)
             }
         }
     })
 });
 
-// 1 - example query
-// {
-//     book(id: 1) {
-//       name
-//       genre
-//       author {
-//         name
-//       }
-//     }
-//   }
-
-// logs
-// { name: 'The Demon Haunted World',
-//   genre: 'Self Help',
-//   id: '1',
-//   authorId: '1' }
 
 // Roots are your entry points
 // each field is a type of query
@@ -105,32 +78,107 @@ const RootQuery = new GraphQLObjectType({
             resolve(parent, args){
                 //code to get data from db/other source
                 //finding book with the id
-               return _.find(books, {id: args.id})
+            //    return _.find(books, {id: args.id})
+            return Book.findById(args.id)
             }
         },
         author:{
             type: AuthorType,
             args:{id:{type: GraphQLID}},
             resolve(parents, args){
-                return _.find(authors, {id: args.id})
+                // return _.find(authors, {id: args.id})
+                return Author.findById(args.id)
             }
         },
         // to get all books
         books:{
             type: new GraphQLList(BookType),
             resolve(parent, args){
-                return books;
+                // return books;
+                //find all
+                return Book.find({})
             }
         },
         authors:{
             type: new GraphQLList(AuthorType),
             resolve(parent, args){
-                return authors
+                // return authors
+                return Author.find({})
             }
         }
     }
 });
+/// EXAMPLE QUERIES FOR ABOVE:
+// {
+//     authors {
+//       name
+//       age
+//       books {
+//         name
+//       }
+//     }
+//   }
+
+// {
+//     author(id: "5b7cd7817e62fc0aa0d73ecf") {
+//       name
+//       age
+//       books {
+//         name
+//       }
+//     }
+//   }
+
+//mutations - adding/updating/deleting
+//  queries are just objects, but mutations require you to explicitly say it:
+// mutation{
+// 	addAuthor(name: "Carl Sagan", age: 80){
+//     name
+//     age
+//   }
+// }
+const Mutation = new GraphQLObjectType({
+    name: 'Mutation',
+    fields:{
+        addAuthor: {
+            type: AuthorType,
+            args:{
+                name:{ type: GraphQLString},
+                age: {type: GraphQLInt}
+            },
+            resolve(parent, args){
+                //creating a local instance of the Author datatype
+                let author = new Author({
+                    name: args.name,
+                    age: args.age
+                });
+                //saving the instance to the db
+                //want to return the data from the save
+                return author.save()
+            }
+        },
+        addBook:{
+            type: BookType,
+            args:{
+                name:{type: GraphQLString},
+                genre: {type: GraphQLString},
+                authorId:{type: GraphQLID}
+            },
+            resolve(parents, args){
+                let book = new Book({
+                    name: args.name,
+                    genre: args.genre,
+                    authorId: args.authorId
+                });
+                
+                return book.save();
+            }
+        }
+    }
+})
+
 
 module.exports = new GraphQLSchema({
     query:RootQuery,
+    mutation: Mutation
 })
