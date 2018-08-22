@@ -10,7 +10,8 @@ const {
     GraphQLString, 
     GraphQLSchema,
     GraphQLID,
-    GraphQLInt
+    GraphQLInt,
+    GraphQLList
 } = graphql;
 
 // DUMMY DATA
@@ -24,13 +25,34 @@ const books = [
 ]
 
 const authors =[
-    {name: 'Carl Sagan', age: 'Dead', id:'1' },
+    {name: 'Carl Sagan', age:'78', id:'1' },
     {name: 'Stephen King', age:'60' , id:'2' },
     {name: 'Ethan Hawke', age:'45' , id:'3' }
 ]
 
+// FIELDS' value is a function so that the schema doesn't throw errors due to references of other types (BookType)
+const AuthorType = new GraphQLObjectType({
+    name: 'Author',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name:{type: GraphQLString},
+        age:{type: GraphQLInt},
+        // we grab a list of BookTypes searches (bc authors have more than one book)
+        books:{
+            type: new GraphQLList(BookType),
+            resolve(parent, args){
+                //get the id from the parent object and use it to filter into a new array
+                return _.filter(books, {authorId: parent.id})
+            }
+        }
+
+    })
+});
+
+
 //fields needs to be a function is that types will have references to another, and the function allows universal knowledge of others
 // when we have type relations (e.g. every book has an author and every author has books) the books need to be able to bounce back and force with the functions
+//
 const BookType = new GraphQLObjectType({
     name: 'Book',
     fields: () => ({
@@ -69,14 +91,6 @@ const BookType = new GraphQLObjectType({
 //   authorId: '1' }
 
 
-const AuthorType = new GraphQLObjectType({
-    name: 'Author',
-    fields: () => ({
-        id: {type: GraphQLID},
-        name:{type: GraphQLString},
-        age:{type: GraphQLInt}
-    })
-});
 
 // Roots are your entry points
 // each field is a type of query
@@ -100,6 +114,19 @@ const RootQuery = new GraphQLObjectType({
             args:{id:{type: GraphQLID}},
             resolve(parents, args){
                 return _.find(authors, {id: args.id})
+            }
+        },
+        // to get all books
+        books:{
+            type: new GraphQLList(BookType),
+            resolve(parent, args){
+                return books;
+            }
+        },
+        authors:{
+            type: new GraphQLList(AuthorType),
+            resolve(parent, args){
+                return authors
             }
         }
     }
