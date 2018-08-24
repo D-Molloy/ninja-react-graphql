@@ -19,6 +19,26 @@ const getBooksQuery = gql`
     }
 `;
 
+const getBookQuery = gql`
+    query($id: ID){
+        book(id:$id){
+            id
+            name
+            genre
+            author{
+                id
+                name
+                age
+                books{
+                    name
+                    id
+                }
+            }
+        }
+    }
+`
+
+
 //MUST use double quotes inside of queries
 // mutation() - mutation variables adding in the names of the variables that will be passed in the component making the query
 //$ === query variable
@@ -32,4 +52,4 @@ const addBookMutation = gql`
     }
 `;
 
-export {getAuthorsQuery, getBooksQuery, addBookMutation};
+export {getAuthorsQuery, getBooksQuery, addBookMutation, getBookQuery};
