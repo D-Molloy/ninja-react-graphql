@@ -5,10 +5,11 @@ const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const schema = require('./schema/schema');
 const mongoose = require('mongoose');
+const cors = require('cors')
 
 const PORT = process.env.PORT || 4000;
 const app = express()
-
+app.use(cors())
 mongoose.connect('mongodb://denis:4200Meadow@ds127362.mlab.com:27362/graphql-ninja')
 mongoose.connection.once('open', ()=>{
     console.log("connected to mLab")

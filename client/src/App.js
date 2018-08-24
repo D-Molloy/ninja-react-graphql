@@ -1,27 +1,26 @@
 import React, { Component } from 'react';
 import ApolloClient from 'apollo-boost';
-//  wraps our application and inject the data we receive into the application
-import {ApolloProvider} from 'react-apollo'
-//Components
-import BookList from './components/BookList'
+import { ApolloProvider } from 'react-apollo';
 
+// components
+import BookList from './components/BookList';
+import AddBook from './components/AddBook';
 
-//  Apollo Client Setups
+// apollo client setup
 const client = new ApolloClient({
-  //uri to supercharged endpoint
-  uri:"http://localhost:400/graphql"
-})
+    uri: 'http://localhost:4000/graphql'
+});
+
 class App extends Component {
   render() {
     return (
-      <ApolloProvider client={client}>
-        <div id="main">
-          <h1>Denis' Reading List</h1>
-          <BookList />
-          <BookList />
-          <BookList />
-        </div>
-      </ApolloProvider>
+        <ApolloProvider client={client}>
+            <div id="main">
+                <h1>Ninja's Reading List</h1>
+                <BookList />
+                <AddBook />
+            </div>
+        </ApolloProvider>
     );
   }
 }
